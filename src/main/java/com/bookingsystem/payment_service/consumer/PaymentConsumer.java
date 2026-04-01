@@ -6,12 +6,14 @@ import com.bookingsystem.payment_service.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.kafka.core.KafkaTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentConsumer {
 
     private final PaymentRepository paymentRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @KafkaListener(topics = "booking-created", groupId = "payment-group")
     public void consume(BookingCreatedEvent event) {
@@ -26,6 +28,7 @@ public class PaymentConsumer {
 
         paymentRepository.save(payment);
 
-        System.out.println("Payment processed for booking: " + event.getBookingId());
+        // send next event
+        kafkaTemplate.send("payment-success", payment.getBookingId());
     }
 }
