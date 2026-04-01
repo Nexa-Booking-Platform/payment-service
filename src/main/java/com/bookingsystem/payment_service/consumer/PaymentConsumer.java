@@ -5,8 +5,8 @@ import com.bookingsystem.payment_service.event.BookingCreatedEvent;
 import com.bookingsystem.payment_service.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -22,13 +22,25 @@ public class PaymentConsumer {
                 .bookingId(event.getBookingId())
                 .userId(event.getUserId())
                 .amount(event.getAmount())
-                .status("SUCCESS")
                 .providerRef("PAY-" + System.currentTimeMillis())
                 .build();
 
-        paymentRepository.save(payment);
+        // simulate success / failure
+        boolean success = Math.random() > 0.3; // 70% success
 
-        // send next event
-        kafkaTemplate.send("payment-success", payment.getBookingId());
+        if (success) {
+            payment.setStatus("SUCCESS");
+
+            paymentRepository.save(payment);
+
+            kafkaTemplate.send("payment-success", payment.getBookingId());
+
+        } else {
+            payment.setStatus("FAILED");
+
+            paymentRepository.save(payment);
+
+            kafkaTemplate.send("payment-failed", payment.getBookingId());
+        }
     }
 }
