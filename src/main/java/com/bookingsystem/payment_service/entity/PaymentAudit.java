@@ -3,6 +3,8 @@ package com.bookingsystem.payment_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "payment_audit")
 @Data
@@ -19,5 +21,5 @@ public class PaymentAudit {
     private String oldStatus;
     private String newStatus;
 
-    private String changedAt;
+    private LocalDateTime changedAt;
 }
